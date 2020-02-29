@@ -18,6 +18,20 @@ import cartopy.feature as cf
 
 
 
+SMALL_SIZE = 11
+MEDIUM_SIZE = 13
+BIGGER_SIZE = 16
+
+#Größe der Plots
+plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=BIGGER_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=BIGGER_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+
 plt.close("all")
 
 def converter(x,y,z):
@@ -27,7 +41,7 @@ def converter(x,y,z):
 
 #%% Input Data
 
-resolution = 1000 # Resolution of the simulation
+resolution = 1000 # Resolution of the simulation (Multiples of 4) 1000 is good for a smooth 3d plot
 
 speed_min = 0
 speed_max = 0
@@ -72,6 +86,7 @@ ground_speed_min = min(speed_array) * earth_radius/peri_dist
 ground_speed_array = speed_array * (earth_radius / space_vector) 
 
 # Manual integration of the Orbital time
+
 orbit_time = sum(((2 * np.pi / len(space_vector)) * space_vector) / speed_array)
 
 
@@ -122,8 +137,7 @@ ground_rot = np.dot(rot_matrix_x, groundtrack_matrix)
 
 # Groundspeed
 ground_speed_simu = np.zeros(resolution)
-ground_speed_simu[0] = ground_speed_array[0]
-angle_step = 2*np.pi / (24 * 60 * 60) * orbit_time / resolution
+angle_step = 2*np.pi / (23.9345  * 60 * 60) * orbit_time / resolution
 
 # Earth rotation along the Z Axis
 earth_rot_matrix_step = np.array([[np.cos(angle_step), np.sin(angle_step), 0], 
@@ -165,9 +179,8 @@ refresh_rate = ground_speed_simu / ground_size_diameter
 
 fig = plt.figure(figsize=plt.figaspect(1.))  
 ax = fig.add_subplot(111, projection='3d')
-fig, bx = plt.subplots()
-fig, cx = plt.subplots()
-fig, dx = plt.subplots()
+
+
 
 
 ax.plot_wireframe(x_earth, y_earth, z_earth, color = "black")
@@ -176,6 +189,29 @@ ax.plot(ground_rot[0], ground_rot[1], ground_rot[2], color = "g", label = "Groun
 ax.legend()
 
 ax.set_title("Orbitbahn")
+
+fig, bx = plt.subplots()
+fig, cx = plt.subplots()
+fig, dx = plt.subplots()
+fig, fx = plt.subplots()
+fig, ex = plt.subplots()
+fig, gx = plt.subplots()
+
+#dx.plot(space_vector, label = "Orbithöhe")
+#dx.legend()
+#dx.grid()
+#dx.set_xlabel("Punkt in der Simulation")
+#dx.set_ylabel("Orbithöhe in m")
+#dx.set_title("Orbithöhe über der Erdoberfläche")
+
+
+dx.plot(refresh_rate, label = "Refresh Rate")
+dx.legend()
+dx.grid()
+dx.set_xlabel("Punkt in der Simulation")
+dx.set_ylabel("Refresh Rate in Hz")
+dx.set_title("Wiederholungsrate des Sensors")
+
 
 bx.plot(refresh_rate, label = "Refresh Rate")
 bx.legend()
@@ -207,14 +243,28 @@ latlon_array = np.array([lat, lon])
 
 
 
-dx = plt.axes(projection = ccrs.PlateCarree())  
-dx.add_feature(cf.COASTLINE)  
-dx.stock_img()   
+ex.plot(speed_array, label = "Orbitalgeschwindigkeit")
+ex.legend()
+ex.grid()
+ex.set_xlabel("Punkt in der Simulation")
+ex.set_ylabel("Orbitalgeschwindigkeit in m/s")
+ex.set_title("Orbitalgeschwindigkeit")
+
+
+fx.plot(space_vector - earth_radius, label = "Orbithöhe")
+fx.legend()
+fx.grid()
+fx.set_xlabel("Punkt in der Simulation")
+fx.set_ylabel("Orbithöhe in m")
+fx.set_title("Orbithöhe über der Erdoberfläche")
+
+
+gx = plt.axes(projection = ccrs.PlateCarree())  
+gx.add_feature(cf.COASTLINE)  
+gx.stock_img()   
 plt.scatter(latlon_array[1], latlon_array[0], transform = ccrs.Geodetic())          
-dx.set_title("Groundtrack Visualisation")                        
+gx.set_title("Groundtrack Visualisation")                        
 plt.show()
-
-
 
 
 
